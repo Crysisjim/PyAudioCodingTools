@@ -1,0 +1,20 @@
+# Build artifacts
+build/
+dist/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Runtime files (generated par l'app)
+pyaudiocodingtools_settings.json
+pyaudiocodingtools_presets.json
+pyaudiocodingtools_crash.log
+pyaudiocodingtools_recovery.json
+
+# IDE
+.vscode/
+.idea/
+*.code-workspace

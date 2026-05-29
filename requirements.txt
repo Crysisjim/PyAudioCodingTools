@@ -1,0 +1,8 @@
+customtkinter>=5.2.0
+tkinterdnd2
+pygame-ce
+Pillow
+numpy
+matplotlib
+requests
+win11toast; sys_platform=="win32"
