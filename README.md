@@ -1,80 +1,54 @@
-# PyAudioCodingTools v2.4
-
 <div align="center">
 
-**Interface graphique batch pour l'encodage audio via FFmpeg**
+# 🎛️ PyAudioCodingTools v2.4
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-blue?logo=python&logoColor=white)
-![Windows](https://img.shields.io/badge/Windows-10%2F11-0078D6?logo=windows&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-green)
-![Release](https://img.shields.io/github/v/release/Crysisjim/PyAudioCodingTools?color=orange)
-![FFmpeg](https://img.shields.io/badge/FFmpeg-Required-red?logo=ffmpeg&logoColor=white)
+**Batch audio encoding GUI — FFmpeg frontend**
+
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://python.org)
+[![Windows](https://img.shields.io/badge/Windows-10%2F11-0078D6?logo=windows&logoColor=white)](https://www.microsoft.com/windows)
+[![License: MIT](https://img.shields.io/badge/License-MIT-22c55e)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/Crysisjim/PyAudioCodingTools?color=f97316&label=Latest)](https://github.com/Crysisjim/PyAudioCodingTools/releases/latest)
+[![FFmpeg](https://img.shields.io/badge/FFmpeg-Required-ef4444?logo=ffmpeg&logoColor=white)](https://www.gyan.dev/ffmpeg/builds/)
+
+🇬🇧 [English](#english) · 🇫🇷 [Français](#français)
 
 </div>
 
 ---
 
-## Présentation
+<a name="english"></a>
+## 🇬🇧 English
 
-PyAudioCodingTools est une interface graphique Windows pour encoder des fichiers audio en batch via FFmpeg.  
-Conçu pour les passionnés de home-cinéma, les créateurs de contenu et les archivistes audio qui veulent contrôler précisément leurs encodages sans taper des commandes FFmpeg à la main.
+### What is it?
 
-**Version portable disponible** — téléchargez le ZIP, extrayez, lancez l'exe. Aucune installation Python requise.  
-⚠️ **FFmpeg est requis séparément** — l'application inclut un installateur intégré (WinGet / téléchargement direct).
+PyAudioCodingTools is a Windows GUI for batch audio encoding via FFmpeg. No command line needed — configure everything visually, drop your files, and let it encode.
 
----
+**Portable version available** — download the ZIP, extract, run the exe. No Python required.
 
-## Fonctionnalités
+> ⚠️ **FFmpeg is required separately** — the app includes a built-in installer (WinGet / direct download from gyan.dev).
 
-### Encodage batch multi-codec
-- **11 codecs supportés** : AAC, MP3 (libmp3lame), Opus, FLAC, ALAC, Vorbis, PCM 16-bit, WMA v2, Dolby Digital (AC3), Dolby Digital Plus (E-AC3), DTS
-- Traitement **parallèle** configurable (jusqu'à 32 workers)
-- File d'attente avec reprise après interruption/crash
-- Paramètres avancés : durée d'analyse, taille de sonde, resampler (soxr/swr)
+### ✨ Features
 
-### Normalisation Loudness EBU R128
-- Traitement en **2 passes** pour une précision maximale
-- Paramètres configurables : Integrated (-70 à 0 LUFS), LRA, True Peak
-- Compatible avec AAC, AC3, E-AC3, MP3, Opus, WMA, Vorbis
+| Category | Features |
+|----------|---------|
+| 🎵 **Codecs** | AAC · MP3 · Opus · FLAC · ALAC · Vorbis · PCM 16-bit · WMA · Dolby Digital · Dolby Digital Plus · DTS |
+| 📊 **Loudness** | EBU R128 normalization (2-pass) — configurable I/LRA/TP targets |
+| 🎬 **MKV/MP4** | Multi-track selection (single file or batch) · MKA output with language/title tags |
+| 📈 **Spectral** | Waveform + FFT spectrogram comparison (source vs encoded) |
+| ⚡ **Presets** | 6 built-in one-click presets + unlimited custom presets |
+| 🔄 **Processing** | Parallel processing (up to 32 workers) · Crash recovery with auto-resume |
+| 🖥️ **UI** | Drag & drop · 11 color themes · Dark/Light mode · **FR/EN language toggle** |
+| 🔔 **Notifications** | Windows taskbar progress · Windows Toast notifications |
+| 🔧 **FFmpeg** | Built-in installer (WinGet / Git Master Full) · Auto symlink + PATH setup |
 
-### Sélection de pistes MKV / MP4
-- Détecte automatiquement **toutes les pistes audio** d'un conteneur
-- Sélecteur unitaire (un fichier) et **batch** (plusieurs épisodes en une fois)
-- Auto-sélection par **langue préférée** (FR, EN, JP, etc.)
-- Sortie MKA avec **préservation des tags langue/titre** pour MKVMerge
+### ⬇️ Download & Install (Portable)
 
-### Analyse spectrale
-- Comparaison **waveform + Spectrogramme FFT** source vs encodé
-- Rendu matplotlib avec barre de navigation intégrée
+1. Download **[PyAudioCodingTools_v2.4_Portable.zip](https://github.com/Crysisjim/PyAudioCodingTools/releases/latest)** from Releases
+2. Extract to any folder
+3. Run `PyAudioCodingTools_v2.4.exe`
+4. On first launch: **Options → Update FFmpeg** to install FFmpeg
 
-### Mise à jour FFmpeg intégrée
-- Installation via **WinGet** (Release Full ou Essentials)
-- Téléchargement direct **Git Master Full** depuis gyan.dev
-- Création automatique des symlinks WinGet + mise à jour du PATH utilisateur
-
-### Interface
-- **Drag & drop** de fichiers et dossiers
-- **11 thèmes** de couleurs + mode clair/sombre
-- **Préréglages one-click** : Série 5.1, Podcast, Musique HQ, Web léger, FLAC
-- Préréglages **personnels** illimités
-- Progression dans la **barre des tâches Windows** (ITaskbarList3)
-- **Notifications Windows Toast** en fin de batch
-- Crash log détaillé (`pyaudiocodingtools_crash.log`)
-
----
-
-## Installation (version portable)
-
-1. Téléchargez **`PyAudioCodingTools_v2.4_Portable.zip`** depuis [Releases](https://github.com/Crysisjim/PyAudioCodingTools/releases)
-2. Extrayez dans n'importe quel dossier
-3. Lancez `PyAudioCodingTools_v2.4.exe`
-4. À la première utilisation, cliquez **Options → Mise à jour FFmpeg** pour installer FFmpeg
-
-> Les fichiers de configuration (`pyaudiocodingtools_settings.json`, `pyaudiocodingtools_presets.json`) sont créés automatiquement à côté de l'exe.
-
----
-
-## Installation (depuis les sources)
+### 🏗️ Run from Source
 
 ```bash
 git clone https://github.com/Crysisjim/PyAudioCodingTools.git
@@ -83,88 +57,152 @@ pip install -r requirements.txt
 python main.py
 ```
 
-**Dépendances** : `customtkinter`, `tkinterdnd2`, `pygame-ce`, `Pillow`, `numpy`, `matplotlib`, `requests`, `win11toast`
-
----
-
-## FFmpeg
-
-FFmpeg n'est **pas inclus** dans l'exe pour des raisons de taille et de licence.
-
-| Méthode | Commande |
-|---------|----------|
-| WinGet (recommandé) | `winget install Gyan.FFmpeg` |
-| Via l'app | Onglet Options → bouton **Mise à jour FFmpeg** |
-| Manuel | [gyan.dev/ffmpeg/builds](https://www.gyan.dev/ffmpeg/builds/) |
-
----
-
-## Codecs — référence rapide
-
-| Codec | Format | Surround | Loudnorm |
-|-------|--------|----------|----------|
-| AAC | `.aac` / `.m4a` | ✅ 7.1 | ✅ |
-| Dolby Digital Plus | `.eac3` / `.mka` | ✅ 7.1 | ✅ |
-| Dolby Digital | `.ac3` / `.mka` | ✅ 5.1 | ✅ |
-| DTS | `.dts` / `.mka` | ✅ 5.1 | ❌ |
-| MP3 | `.mp3` | ❌ stéréo | ✅ |
-| Opus | `.opus` | ✅ 7.1 | ✅ |
-| FLAC | `.flac` | ✅ 8ch | ❌ |
-| ALAC | `.m4a` | ✅ 8ch | ❌ |
-| Vorbis | `.ogg` | ✅ 8ch | ✅ |
-| WMA v2 | `.wma` | ❌ stéréo | ✅ |
-| PCM 16-bit | `.wav` | ✅ 8ch | ❌ |
-
----
-
-## Compilation (rebuild l'exe)
+### 🔧 Build the exe
 
 ```bat
+pip install pyinstaller
 build.bat
 ```
 
-Le script installe les dépendances, nettoie les anciens builds, et produit `dist\PyAudioCodingTools_v2.4.exe` via PyInstaller.
+### 📦 FFmpeg
 
-> **PyInstaller** est requis uniquement pour la compilation : `pip install pyinstaller`
-
----
-
-## Crédits
-
-- **Développé par** Crysisjim
-- Code & Architecture initiale : Grok 4 (xAI) — 20%
-- Optimisation & Finitions : Gemini 2.5 Pro (Google) — 20%
-- Refactoring, corrections & features v2.1–2.4 : Claude Opus / Sonnet (Anthropic) — 20%
-- Direction, tests & intégration : Crysisjim — 40%
-
-**Bibliothèques** : Python · CustomTkinter · FFmpeg · Pygame · Matplotlib · NumPy · Pillow · tkinterdnd2
+| Method | Command |
+|--------|---------|
+| Via the app (recommended) | Options → **Update FFmpeg** → Release Full |
+| WinGet | `winget install Gyan.FFmpeg` |
+| Manual | [gyan.dev/ffmpeg/builds](https://www.gyan.dev/ffmpeg/builds/) |
 
 ---
 
-## Changelog
+<a name="français"></a>
+## 🇫🇷 Français
+
+### C'est quoi ?
+
+PyAudioCodingTools est une interface graphique Windows pour l'encodage audio en batch via FFmpeg. Pas de ligne de commande — configurez tout visuellement, glissez vos fichiers, et lancez l'encodage.
+
+**Version portable disponible** — téléchargez le ZIP, extrayez, lancez l'exe. Aucune installation Python requise.
+
+> ⚠️ **FFmpeg est requis séparément** — l'application inclut un installateur intégré (WinGet / téléchargement direct depuis gyan.dev).
+
+### ✨ Fonctionnalités
+
+| Catégorie | Fonctionnalités |
+|-----------|----------------|
+| 🎵 **Codecs** | AAC · MP3 · Opus · FLAC · ALAC · Vorbis · PCM 16-bit · WMA · Dolby Digital · Dolby Digital Plus · DTS |
+| 📊 **Loudness** | Normalisation EBU R128 en 2 passes — cibles I/LRA/TP configurables |
+| 🎬 **MKV/MP4** | Sélection de pistes (unitaire ou batch) · Sortie MKA avec tags langue/titre |
+| 📈 **Spectral** | Comparaison waveform + Spectrogramme FFT (source vs encodé) |
+| ⚡ **Préréglages** | 6 préréglages intégrés one-click + préréglages personnels illimités |
+| 🔄 **Traitement** | Traitement parallèle (jusqu'à 32 workers) · Reprise après crash |
+| 🖥️ **Interface** | Drag & drop · 11 thèmes · Mode clair/sombre · **Bascule FR/EN** |
+| 🔔 **Notifications** | Progression barre des tâches · Notifications Toast Windows |
+| 🔧 **FFmpeg** | Installateur intégré (WinGet / Git Master Full) · Symlinks + PATH auto |
+
+### ⬇️ Téléchargement & Installation (Portable)
+
+1. Téléchargez **[PyAudioCodingTools_v2.4_Portable.zip](https://github.com/Crysisjim/PyAudioCodingTools/releases/latest)** depuis Releases
+2. Extrayez dans n'importe quel dossier
+3. Lancez `PyAudioCodingTools_v2.4.exe`
+4. Au premier lancement : **Options → Mise à jour FFmpeg** pour installer FFmpeg
+
+### 🏗️ Lancer depuis les sources
+
+```bash
+git clone https://github.com/Crysisjim/PyAudioCodingTools.git
+cd PyAudioCodingTools
+pip install -r requirements.txt
+python main.py
+```
+
+### 🔧 Compiler l'exe
+
+```bat
+pip install pyinstaller
+build.bat
+```
+
+### 📦 FFmpeg
+
+| Méthode | Commande |
+|---------|----------|
+| Via l'app (recommandé) | Options → **Mise à jour FFmpeg** → Release Full |
+| WinGet | `winget install Gyan.FFmpeg` |
+| Manuel | [gyan.dev/ffmpeg/builds](https://www.gyan.dev/ffmpeg/builds/) |
+
+### 📋 Tableau des codecs
+
+| Codec | Extension | Surround | Loudnorm | Bitrate typique |
+|-------|-----------|----------|----------|-----------------|
+| **AAC** | `.aac` | ✅ 7.1 | ✅ | 96–320 kbps |
+| **Dolby Digital Plus** | `.eac3` / `.mka` | ✅ 7.1 | ✅ | 128–640+ kbps |
+| **Dolby Digital** | `.ac3` / `.mka` | ✅ 5.1 | ✅ | 192–640 kbps |
+| **DTS** | `.dts` / `.mka` | ✅ 5.1 | ❌ | 192–1536 kbps |
+| **MP3** | `.mp3` | ❌ stéréo | ✅ | 64–320 kbps |
+| **Opus** | `.opus` | ✅ 7.1 | ✅ | 32–256 kbps |
+| **FLAC** | `.flac` | ✅ 8ch | ❌ | Sans perte |
+| **PCM 16-bit** | `.wav` | ✅ 8ch | ❌ | Non compressé |
+
+---
+
+## 📖 Wiki
+
+Documentation complète : **[github.com/Crysisjim/PyAudioCodingTools/wiki](https://github.com/Crysisjim/PyAudioCodingTools/wiki)**
+
+- [Installation](../../wiki/Installation)
+- [FFmpeg](../../wiki/FFmpeg)
+- [Codecs](../../wiki/Codecs)
+- [EBU R128 Loudness](../../wiki/Loudnorm-EBU-R128)
+- [MKV/MP4 Track Selection](../../wiki/Pistes-MKV-MP4)
+- [Presets](../../wiki/Presets)
+- [Troubleshooting](../../wiki/Troubleshooting)
+
+---
+
+## 📝 Changelog
 
 ### v2.4
-- Préréglages intégrés one-click (Série, Podcast, Musique, Web, FLAC)
-- Auto-sélection de la piste préférée (FR/EN/JP/…) dans les sélecteurs
-- Bouton "Ouvrir le dossier de sortie"
-- Timeout WAV adaptatif (gros fichiers PCM Blu-ray)
-- Reprise après crash avec relance auto de l'encodage
-- Crash log détaillé
+- ⚡ Built-in one-click presets (Series, Podcast, Music HQ, Web, FLAC)
+- 🌐 **FR/EN language toggle** (Options tab, takes effect on restart)
+- ⭐ Auto-selection of preferred language track in MKV pickers
+- 📂 "Open Output Folder" button
+- ⏱️ Adaptive WAV timeout (large Blu-ray PCM files)
+- 🔄 Crash recovery with auto-resume on next launch
+- 📋 Detailed crash log with system info
+- 🐛 Fixed: custom FFmpeg args with quoted paths (shlex.split)
+- 🐛 Fixed: duplicate WinGet symlink call removed
 
 ### v2.3
-- Sélection de pistes MKV/MP4 unitaire et batch
-- Sortie MKA avec préservation des tags langue/titre
-- Mise à jour FFmpeg intégrée (WinGet + Git Master Full)
-- Création automatique des symlinks WinGet
+- MKV/MP4 track selection (single + batch)
+- MKA output with language/title tag preservation
+- Built-in FFmpeg installer (WinGet + Git Master Full)
+- WinGet symlinks auto-creation
 
 ### v2.2
-- Spectrogramme FFT (comparaison source/encodé)
-- Normalisation Loudnorm EBU R128 en 2 passes
-- Traitement parallèle configurable
-- Notifications Windows Toast
+- FFT spectrogram comparison
+- EBU R128 loudness normalization (2-pass)
+- Configurable parallel processing
+- Windows Toast notifications
 
 ---
 
-## Licence
+## 🙏 Credits
 
-MIT — voir [LICENSE](LICENSE)
+**Developed by** [Crysisjim](https://github.com/Crysisjim)
+
+| Contributor | Role | Share |
+|-------------|------|-------|
+| Grok 4 (xAI) | Initial code & architecture | 20% |
+| Gemini 2.5 Pro (Google) | Optimization & polish | 20% |
+| Claude Sonnet/Opus (Anthropic) | Refactoring, fixes, features v2.1–2.4 | 20% |
+| Crysisjim | Direction, testing & integration | 40% |
+
+**Libraries:** Python · CustomTkinter · FFmpeg · Pygame · Matplotlib · NumPy · Pillow · tkinterdnd2
+
+---
+
+<div align="center">
+
+**MIT License** · [Crysisjim](https://github.com/Crysisjim) · 2026
+
+</div>

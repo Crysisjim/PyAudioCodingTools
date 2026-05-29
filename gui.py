@@ -11,6 +11,7 @@ from audio_utils import (
     get_audio_tracks, LOUDNORM_CODECS, MAX_CHANNELS, AC_MAP
 )
 from taskbar_utils import TaskbarController
+from strings import T, set_lang, get_lang
 
 try:
     from tkinterdnd2 import TkinterDnD, DND_FILES
@@ -114,7 +115,7 @@ class PyAudioCodingTools:
     
     def __init__(self, root):
         self.root = root
-        self.root.title(f"PyAudioCodingTools v{self.VERSION} - Batch GUI pour encodage audio")
+        self.root.title(T('window_title', version=self.VERSION))
         self.root.update_idletasks()
         self.taskbar = TaskbarController(self.root)
         ctk.deactivate_automatic_dpi_awareness()
@@ -133,6 +134,7 @@ class PyAudioCodingTools:
         self.codec_display_map = {'aac':'AAC','ac3':'Dolby Digital','alac':'ALAC','flac':'FLAC','libmp3lame':'MP3','libopus':'Opus','pcm_s16le':'PCM 16-bit','wmav2':'WMA v2','eac3':'Dolby Digital Plus','dts':'DTS','libvorbis':'Vorbis'}
         self.codec_reverse_map = {v:k for k,v in self.codec_display_map.items()}
         self.settings = self.load_settings(); self.presets = self.load_presets()
+        set_lang(self.settings.get('language', 'fr'))
         self.window_width = self.settings.get('window_width',1385); self.window_height = self.settings.get('window_height',885)
         self.root.geometry(f"{self.window_width}x{self.window_height}")
         self.theme = self.settings.get('theme','dark'); ctk.set_appearance_mode(self.theme)
@@ -733,7 +735,8 @@ class PyAudioCodingTools:
            'async':self.async_combo.get() if self.async_combo else 'On',
            'min_hard_comp':self.min_hard_comp_entry.get() if self.min_hard_comp_entry else '0.100000',
            'first_pts':self.first_pts_entry.get() if self.first_pts_entry else '0',
-           'resampler':self.resampler_combo.get() if self.resampler_combo else 'soxr'}
+           'resampler':self.resampler_combo.get() if self.resampler_combo else 'soxr',
+           'language':get_lang()}
         try:
             with open(self.settings_file,'w',encoding='utf-8') as f: json.dump(s,f,indent=4)
         except Exception as e: messagebox.showerror("Erreur",f"Sauvegarde impossible : {e}")
@@ -805,48 +808,48 @@ class PyAudioCodingTools:
     # ===================== TABS =====================
     def create_tabs(self):
         # INPUT
-        self.input_tab=self.notebook.add("Input"); lf=ctk.CTkFrame(self.input_tab); lf.pack(fill='both',expand=True,pady=5,padx=5)
+        self.input_tab=self.notebook.add(T('tab_input')); lf=ctk.CTkFrame(self.input_tab); lf.pack(fill='both',expand=True,pady=5,padx=5)
         self.file_list=tk.Listbox(lf,selectmode=tk.MULTIPLE,height=10,bg='#333333',fg='white',borderwidth=0,highlightthickness=0)
         self.input_scrollbar=ctk.CTkScrollbar(lf,command=self.file_list.yview); self.file_list.configure(yscrollcommand=self.input_scrollbar.set)
         self.file_list.pack(side="left",fill='both',expand=True); self.input_scrollbar.pack(side="right",fill="y")
         bf=ctk.CTkFrame(self.input_tab,fg_color="transparent"); bf.pack(side="bottom",anchor='center',pady=6)
-        b1=ctk.CTkButton(bf,text="Ajouter des fichiers 📄",command=self.add_files,fg_color='#ADD8E6',text_color='#000000'); b1.pack(side=tk.LEFT,padx=3)
+        b1=ctk.CTkButton(bf,text=T('btn_add_files'),command=self.add_files,fg_color='#ADD8E6',text_color='#000000'); b1.pack(side=tk.LEFT,padx=3)
         ToolTip(b1,"Ouvrir une fenêtre pour sélectionner un ou plusieurs fichiers audio.\nFormats acceptés : FLAC, WAV, MP3, AAC, OGG, M4A, DTS, THD.\nLes fichiers seront ajoutés à la liste ci-dessus.")
-        b2=ctk.CTkButton(bf,text="Ajouter un dossier 📁",command=self.add_folder,fg_color='#800080',text_color='white'); b2.pack(side=tk.LEFT,padx=3)
+        b2=ctk.CTkButton(bf,text=T('btn_add_folder'),command=self.add_folder,fg_color='#800080',text_color='white'); b2.pack(side=tk.LEFT,padx=3)
         ToolTip(b2,"Scanner un dossier entier (y compris tous les sous-dossiers)\net ajouter automatiquement tous les fichiers audio trouvés.\nIdéal pour traiter une discothèque ou une saison de série d'un coup.")
-        b3=ctk.CTkButton(bf,text="Retirer la sélection 🗑️",command=self.remove_selected,fg_color='#FF4500',text_color='white'); b3.pack(side=tk.LEFT,padx=3)
+        b3=ctk.CTkButton(bf,text=T('btn_remove_sel'),command=self.remove_selected,fg_color='#FF4500',text_color='white'); b3.pack(side=tk.LEFT,padx=3)
         ToolTip(b3,"Retire de la liste les fichiers que vous avez sélectionnés (surlignés en bleu).\nPour sélectionner plusieurs fichiers : maintenez Ctrl en cliquant.\nLes fichiers originaux ne sont PAS supprimés du disque.")
-        b4=ctk.CTkButton(bf,text="Tout vider ❌",command=self.clear_files,fg_color='#FF0000',text_color='white'); b4.pack(side=tk.LEFT,padx=3)
+        b4=ctk.CTkButton(bf,text=T('btn_clear_all'),command=self.clear_files,fg_color='#FF0000',text_color='white'); b4.pack(side=tk.LEFT,padx=3)
         ToolTip(b4,"Vide entièrement la liste des fichiers à traiter.\nAucun fichier n'est supprimé de votre disque,\nil sont simplement retirés de la file d'attente.")
-        b5=ctk.CTkButton(bf,text="Monter ↑",command=self.move_file_up,fg_color='#0066ff',text_color='white',width=70); b5.pack(side=tk.LEFT,padx=3)
+        b5=ctk.CTkButton(bf,text=T('btn_move_up'),command=self.move_file_up,fg_color='#0066ff',text_color='white',width=70); b5.pack(side=tk.LEFT,padx=3)
         ToolTip(b5,"Déplace le fichier sélectionné vers le haut dans la liste.\nCela change l'ordre dans lequel les fichiers seront traités.")
-        b6=ctk.CTkButton(bf,text="Descendre ↓",command=self.move_file_down,fg_color='#0066ff',text_color='white',width=70); b6.pack(side=tk.LEFT,padx=3)
+        b6=ctk.CTkButton(bf,text=T('btn_move_down'),command=self.move_file_down,fg_color='#0066ff',text_color='white',width=70); b6.pack(side=tk.LEFT,padx=3)
         ToolTip(b6,"Déplace le fichier sélectionné vers le bas dans la liste.\nCela change l'ordre dans lequel les fichiers seront traités.")
-        b7=ctk.CTkButton(bf,text="📂 Dossier sortie",command=self._open_output_folder,fg_color='#FFA500',text_color='white',width=130); b7.pack(side=tk.LEFT,padx=3)
+        b7=ctk.CTkButton(bf,text=T('btn_open_output'),command=self._open_output_folder,fg_color='#FFA500',text_color='white',width=130); b7.pack(side=tk.LEFT,padx=3)
         ToolTip(b7,"Ouvre le dossier de sortie dans l'explorateur Windows.\n\n"
                    "Si le champ 'Dossier de sortie' (onglet Options) est rempli,\nouvre ce dossier.\n\n"
                    "Sinon, ouvre le dossier du premier fichier de la liste\n(les fichiers convertis sont créés à côté des originaux).")
 
         # OUTPUT
-        self.output_tab=self.notebook.add("Output"); ocf=ctk.CTkFrame(self.output_tab); ocf.pack(fill='x',pady=5)
-        dc=ctk.CTkCheckBox(ocf,text="Informations détaillées",variable=self.detailed_output_var); dc.pack(side=tk.LEFT,padx=5)
+        self.output_tab=self.notebook.add(T('tab_output')); ocf=ctk.CTkFrame(self.output_tab); ocf.pack(fill='x',pady=5)
+        dc=ctk.CTkCheckBox(ocf,text=T('chk_detailed'),variable=self.detailed_output_var); dc.pack(side=tk.LEFT,padx=5)
         ToolTip(dc,"ACTIVÉ : Affiche les commandes FFmpeg complètes, la sortie brute du terminal,\net toutes les informations techniques de chaque étape.\nTrès utile pour comprendre pourquoi un fichier échoue.\n\nDÉSACTIVÉ : Affichage simplifié, une ligne par fichier.\nRecommandé pour un usage normal.")
-        slb=ctk.CTkButton(ocf,text="Sauvegarder le log 💾",command=self.save_log,fg_color='#008000'); slb.pack(side=tk.RIGHT,padx=5)
+        slb=ctk.CTkButton(ocf,text=T('btn_save_log'),command=self.save_log,fg_color='#008000'); slb.pack(side=tk.RIGHT,padx=5)
         ToolTip(slb,"Enregistre tout le texte de la console de sortie dans un fichier .txt.\nUtile pour garder une trace ou envoyer un rapport de bug.")
-        clb=ctk.CTkButton(ocf,text="Effacer log et tâches 🧹",command=self.clear_log_and_jobs,fg_color='#FF4500'); clb.pack(side=tk.RIGHT,padx=5)
+        clb=ctk.CTkButton(ocf,text=T('btn_clear_log'),command=self.clear_log_and_jobs,fg_color='#FF4500'); clb.pack(side=tk.RIGHT,padx=5)
         ToolTip(clb,"Efface le texte du log ET supprime la liste des tâches\n(barres de progression en bas).\nPermet de repartir à zéro sans relancer l'application.")
         self.paned_window=tk.PanedWindow(self.output_tab,orient='vertical',sashrelief='flat',sashwidth=4,bg='#2b2b2b'); self.paned_window.pack(fill='both',expand=True,padx=5,pady=5)
         self.log_frame=tk.Frame(self.paned_window,bg='#2b2b2b'); self.paned_window.add(self.log_frame)
         self.output_text=tk.Text(self.log_frame,height=10,bg='#333333',fg='white',borderwidth=0); self.output_text.pack(side="left",fill="both",expand=True)
         sb=tk.Scrollbar(self.log_frame,command=self.output_text.yview,bg='#333333'); sb.pack(side="right",fill="y"); self.output_text.configure(yscrollcommand=sb.set)
         self.progress_container=tk.Frame(self.paned_window,bg='#2b2b2b'); self.paned_window.add(self.progress_container)
-        self.progress_pane=ctk.CTkScrollableFrame(self.progress_container,label_text="Liste des tâches en cours"); self.progress_pane.pack(fill='both',expand=True)
+        self.progress_pane=ctk.CTkScrollableFrame(self.progress_container,label_text=T('tasks_label')); self.progress_pane.pack(fill='both',expand=True)
         for t,c in [("success","#00ff00"),("error","#ff0000"),("info","#00ccff")]: self.output_text.tag_configure(t,foreground=c)
 
         # PARAMS
-        self.encode_params_tab=self.notebook.add("Paramètres d'encodage"); mpf=ctk.CTkFrame(self.encode_params_tab,fg_color="transparent"); mpf.pack(fill='both',expand=True,padx=20,pady=10)
+        self.encode_params_tab=self.notebook.add(T('tab_params')); mpf=ctk.CTkFrame(self.encode_params_tab,fg_color="transparent"); mpf.pack(fill='both',expand=True,padx=20,pady=10)
         ff=ctk.CTkFrame(mpf); ff.pack(fill='x',pady=(0,10)); ff.grid_columnconfigure(tuple(range(8)),weight=1)
-        ctk.CTkLabel(ff,text="Codec Audio :").grid(row=0,column=0,padx=5,pady=10,sticky="e")
+        ctk.CTkLabel(ff,text=T('lbl_codec')).grid(row=0,column=0,padx=5,pady=10,sticky="e")
         cc=ctk.CTkOptionMenu(ff,variable=self.codec_var,values=self.codec_display_list,command=self.update_codec_params); cc.grid(row=0,column=1,padx=5,pady=10,sticky="w")
         ToolTip(cc,"Le format audio dans lequel vos fichiers seront convertis.\n\n"
                    "• AAC : Le plus compatible (smartphones, TV, streaming). Bonne qualité.\n"
@@ -859,7 +862,7 @@ class PyAudioCodingTools:
                    "• ALAC : Sans perte Apple. Pour iTunes/iPhone.\n"
                    "• PCM 16-bit : Audio brut non compressé (WAV).\n"
                    "• Vorbis : Alternative libre au MP3. Bonne qualité.")
-        ctk.CTkLabel(ff,text="Bitrate (kbps) :").grid(row=0,column=2,padx=5,pady=10,sticky="e")
+        ctk.CTkLabel(ff,text=T('lbl_bitrate')).grid(row=0,column=2,padx=5,pady=10,sticky="e")
         self.bitrate_combo=ctk.CTkOptionMenu(ff,values=[]); self.bitrate_combo.grid(row=0,column=3,padx=5,pady=10,sticky="w")
         ToolTip(self.bitrate_combo,"La qualité du son encodé, mesurée en kilobits par seconde (kbps).\n\n"
                 "AUGMENTER le bitrate = Meilleure qualité audio, fichier plus volumineux.\n"
@@ -870,7 +873,7 @@ class PyAudioCodingTools:
                 "• 320 kbps : Très bonne qualité stéréo (quasi transparent)\n"
                 "• 448 kbps : Standard pour le surround 5.1 (DVD)\n"
                 "• 640 kbps : Haute qualité surround 5.1/7.1")
-        ctk.CTkLabel(ff,text="Fréquence (Hz) :").grid(row=0,column=4,padx=5,pady=10,sticky="e")
+        ctk.CTkLabel(ff,text=T('lbl_samplerate')).grid(row=0,column=4,padx=5,pady=10,sticky="e")
         self.sample_rate_combo=ctk.CTkOptionMenu(ff,values=[]); self.sample_rate_combo.grid(row=0,column=5,padx=5,pady=10,sticky="w")
         ToolTip(self.sample_rate_combo,"La fréquence d'échantillonnage : combien de fois par seconde le son est mesuré.\n\n"
                 "AUGMENTER = Plus de détail dans les hautes fréquences.\n"
@@ -879,7 +882,7 @@ class PyAudioCodingTools:
                 "• 48000 Hz : Standard vidéo/film/TV. RECOMMANDÉ pour la plupart des usages.\n"
                 "• 96000 Hz : Haute résolution. Seulement si votre source est en Hi-Res.\n"
                 "• 22050 Hz ou moins : Qualité téléphone. Déconseillé.")
-        ctk.CTkLabel(ff,text="Canaux :").grid(row=0,column=6,padx=5,pady=10,sticky="e")
+        ctk.CTkLabel(ff,text=T('lbl_channels')).grid(row=0,column=6,padx=5,pady=10,sticky="e")
         self.channels_combo=ctk.CTkOptionMenu(ff,variable=self.surround_mode_var,values=[]); self.channels_combo.grid(row=0,column=7,padx=5,pady=10,sticky="w")
         ToolTip(self.channels_combo,"Le nombre de canaux audio (haut-parleurs) du fichier de sortie.\n\n"
                 "• Same : Garde le même nombre de canaux que le fichier original.\n"
@@ -892,17 +895,17 @@ class PyAudioCodingTools:
                 "            Pour les installations home-cinéma haut de gamme.")
 
         # Validation indicator
-        self.validation_label=ctk.CTkLabel(mpf,text="✓ Configuration valide — Prêt à encoder",text_color="#00CC00",font=("Arial",11,"bold")); self.validation_label.pack(fill='x',pady=(0,5))
+        self.validation_label=ctk.CTkLabel(mpf,text=T('valid_ok'),text_color="#00CC00",font=("Arial",11,"bold")); self.validation_label.pack(fill='x',pady=(0,5))
         self.codec_var.trace_add('write',self.validate_params_realtime); self.surround_mode_var.trace_add('write',self.validate_params_realtime)
         self.loudnorm_var.trace_add('write',self.validate_params_realtime); self.dialnorm_var.trace_add('write',self.validate_params_realtime)
 
         of=ctk.CTkFrame(mpf); of.pack(fill='x',pady=5); ci=ctk.CTkFrame(of,fg_color="transparent"); ci.pack(pady=10)
-        c1=ctk.CTkCheckBox(ci,text="Copier les métadonnées",variable=self.copy_metadata_var); c1.pack(side=tk.LEFT,padx=10)
+        c1=ctk.CTkCheckBox(ci,text=T('chk_copy_meta'),variable=self.copy_metadata_var); c1.pack(side=tk.LEFT,padx=10)
         ToolTip(c1,"ACTIVÉ : Le fichier converti conservera les informations du fichier original :\n"
                    "titre, artiste, album, année, pochette, et les chapitres (si présents).\n"
                    "Utile pour garder les infos de vos fichiers musicaux ou films.\n\n"
                    "DÉSACTIVÉ : Le fichier converti sera 'vierge' sans métadonnées.")
-        c2=ctk.CTkCheckBox(ci,text="Normalisation Loudnorm (EBU R128)",variable=self.loudnorm_var,command=self.toggle_loudness_visibility); c2.pack(side=tk.LEFT,padx=10)
+        c2=ctk.CTkCheckBox(ci,text=T('chk_loudnorm'),variable=self.loudnorm_var,command=self.toggle_loudness_visibility); c2.pack(side=tk.LEFT,padx=10)
         ToolTip(c2,"ACTIVÉ : Ajuste automatiquement le volume de vos fichiers selon la norme EBU R128.\n"
                    "Cela signifie que tous vos fichiers auront le même volume perçu.\n"
                    "Très utile si vous en avez marre de monter/baisser le son entre chaque épisode ou chanson.\n"
@@ -910,14 +913,14 @@ class PyAudioCodingTools:
                    "DÉSACTIVÉ : Le volume du fichier original est conservé tel quel.\n\n"
                    "Note : Compatible avec AAC, AC3, E-AC3, MP3, Opus, WMA et Vorbis.\n"
                    "Non compatible avec FLAC, ALAC, PCM et DTS (ces codecs encodent sans filtre audio).")
-        c3=ctk.CTkCheckBox(ci,text="Dialnorm (-31 dB)",variable=self.dialnorm_var); c3.pack(side=tk.LEFT,padx=10)
+        c3=ctk.CTkCheckBox(ci,text=T('chk_dialnorm'),variable=self.dialnorm_var); c3.pack(side=tk.LEFT,padx=10)
         ToolTip(c3,"ACTIVÉ : Ajoute une métadonnée 'dialogue normalization' au fichier Dolby Digital Plus.\n"
                    "Valeur -31 dB = indique au décodeur Dolby de ne PAS modifier le volume.\n"
                    "C'est le réglage standard pour la compatibilité avec les amplis home-cinéma.\n\n"
                    "DÉSACTIVÉ : Pas de métadonnée dialnorm ajoutée.\n\n"
                    "Note : Cette option n'a d'effet que si le codec est Dolby Digital Plus (E-AC3).\n"
                    "Pour tous les autres codecs, elle est ignorée.")
-        c4=ctk.CTkCheckBox(ci,text="Comparaison de spectre audio",variable=self.compare_spectrum_var); c4.pack(side=tk.LEFT,padx=10)
+        c4=ctk.CTkCheckBox(ci,text=T('chk_spectrum'),variable=self.compare_spectrum_var); c4.pack(side=tk.LEFT,padx=10)
         ToolTip(c4,"ACTIVÉ : Après chaque encodage, ouvre une fenêtre de comparaison visuelle avec 4 graphiques :\n"
                    "• En haut : Forme d'onde du fichier source vs fichier encodé\n"
                    "• En bas : Spectrogramme FFT (analyse fréquentielle) source vs encodé\n\n"
@@ -925,7 +928,7 @@ class PyAudioCodingTools:
                    "Les couleurs chaudes = beaucoup d'énergie. Les couleurs froides = peu d'énergie.\n"
                    "Un bon encodage garde un spectrogramme similaire à l'original.\n\n"
                    "DÉSACTIVÉ : Pas de fenêtre de comparaison (encodage plus rapide).")
-        c5=ctk.CTkCheckBox(ci,text="Sortie MKA (conteneur)",variable=self.mka_output_var); c5.pack(side=tk.LEFT,padx=10)
+        c5=ctk.CTkCheckBox(ci,text=T('chk_mka'),variable=self.mka_output_var); c5.pack(side=tk.LEFT,padx=10)
         ToolTip(c5,"Concerne les formats bruts : EAC3, AC3, DTS, WAV, WMA, AAC.\n\n"
                    "ACTIVÉ : Le fichier encodé est enveloppé dans un conteneur Matroska Audio (.mka).\n"
                    "Le .mka préserve les métadonnées de la piste source (langue, titre).\n"
@@ -1032,11 +1035,11 @@ class PyAudioCodingTools:
         self.update_codec_params(); self.toggle_loudness_visibility()
 
         # PRESETS
-        self.presets_tab=self.notebook.add("Préréglages")
+        self.presets_tab=self.notebook.add(T('tab_presets'))
         
         # Presets intégrés (rapides, one-click)
         bif = ctk.CTkFrame(self.presets_tab); bif.pack(fill="x", pady=10, padx=20)
-        ctk.CTkLabel(bif, text="⚡ Préréglages intégrés (one-click)", font=("Arial", 12, "bold")).pack(pady=5)
+        ctk.CTkLabel(bif, text=T('presets_builtin_title'), font=("Arial", 12, "bold")).pack(pady=5)
         
         BUILT_IN_PRESETS = {
             "🎬 Série 5.1 (EAC3 640k)": {
@@ -1082,22 +1085,22 @@ class PyAudioCodingTools:
         
         # Presets personnels (existants)
         pf=ctk.CTkFrame(self.presets_tab,fg_color="transparent"); pf.pack(expand=True, pady=10)
-        ctk.CTkLabel(pf,text="💾 Préréglages personnels", font=("Arial", 12, "bold")).pack(pady=5)
-        ctk.CTkLabel(pf,text="Nom du préréglage :").pack(pady=5); self.preset_name_entry=ctk.CTkEntry(pf,width=200); self.preset_name_entry.pack(pady=5)
+        ctk.CTkLabel(pf,text=T('presets_custom_title'), font=("Arial", 12, "bold")).pack(pady=5)
+        ctk.CTkLabel(pf,text=T('lbl_preset_name')).pack(pady=5); self.preset_name_entry=ctk.CTkEntry(pf,width=200); self.preset_name_entry.pack(pady=5)
         ToolTip(self.preset_name_entry,"Donnez un nom à votre configuration actuelle pour la retrouver facilement.\nExemple : 'Série TV - AC3 448k 5.1' ou 'Podcast - AAC 128k Stéréo'")
         self.preset_combo=ctk.CTkOptionMenu(pf,values=list(self.presets.keys()) or ["Aucun"],width=200); self.preset_combo.pack(pady=10)
         ToolTip(self.preset_combo,"Liste de vos préréglages sauvegardés.\nSélectionnez-en un puis cliquez 'Charger' pour restaurer ses paramètres.")
         pbf=ctk.CTkFrame(pf,fg_color="transparent"); pbf.pack(pady=10)
-        svb=ctk.CTkButton(pbf,text="Sauvegarder 💾",command=self.save_preset,fg_color='#0066ff'); svb.pack(side="left",padx=5)
+        svb=ctk.CTkButton(pbf,text=T('btn_preset_save'),command=self.save_preset,fg_color='#0066ff'); svb.pack(side="left",padx=5)
         ToolTip(svb,"Enregistre TOUS les paramètres actuels (codec, bitrate, loudnorm, etc.)\nsous le nom que vous avez tapé ci-dessus.")
-        ldb=ctk.CTkButton(pbf,text="Charger 📂",command=self.load_preset,fg_color='#008000'); ldb.pack(side="left",padx=5)
+        ldb=ctk.CTkButton(pbf,text=T('btn_preset_load'),command=self.load_preset,fg_color='#008000'); ldb.pack(side="left",padx=5)
         ToolTip(ldb,"Restaure les paramètres du préréglage sélectionné dans la liste.\nTous les réglages de l'onglet 'Paramètres d'encodage' seront remplacés.")
-        deb=ctk.CTkButton(pbf,text="Supprimer 🗑️",command=self.delete_preset,fg_color='#FF0000'); deb.pack(side="left",padx=5)
+        deb=ctk.CTkButton(pbf,text=T('btn_preset_delete'),command=self.delete_preset,fg_color='#FF0000'); deb.pack(side="left",padx=5)
         ToolTip(deb,"Supprime définitivement le préréglage sélectionné de la liste.")
 
         # OPTIONS
         self.options_tab=self.notebook.add("Options"); oframe=ctk.CTkFrame(self.options_tab,fg_color="transparent"); oframe.pack(expand=True,fill="both",padx=50)
-        ctk.CTkLabel(oframe,text="Chemin vers FFmpeg :").pack(anchor="w")
+        ctk.CTkLabel(oframe,text=T('lbl_ffmpeg_path')).pack(anchor="w")
         fff=ctk.CTkFrame(oframe,fg_color="transparent"); fff.pack(fill="x",pady=5)
         self.ffmpeg_path_entry=ctk.CTkEntry(fff); self.ffmpeg_path_entry.pack(side="left",fill="x",expand=True)
         self.ffmpeg_path_entry.insert(0,self.settings.get('ffmpeg_path',self.find_executable('ffmpeg') or 'ffmpeg'))
@@ -1116,14 +1119,14 @@ class PyAudioCodingTools:
                 "• Git Master Full (Téléchargement) : Dernière version, tous les codecs\n"
                 "   Téléchargée depuis gyan.dev, extraite avec WinRAR/7-Zip/Win11")
 
-        ctk.CTkLabel(oframe,text="Chemin vers FFprobe :").pack(anchor="w")
+        ctk.CTkLabel(oframe,text=T('lbl_ffprobe_path')).pack(anchor="w")
         fpf=ctk.CTkFrame(oframe,fg_color="transparent"); fpf.pack(fill="x",pady=5)
         self.ffprobe_path_entry=ctk.CTkEntry(fpf); self.ffprobe_path_entry.pack(side="left",fill="x",expand=True)
         self.ffprobe_path_entry.insert(0,self.settings.get('ffprobe_path',self.find_executable('ffprobe') or 'ffprobe'))
         ToolTip(self.ffprobe_path_entry,"Le chemin vers ffprobe.exe — un outil compagnon de FFmpeg\nqui analyse les fichiers audio/vidéo pour en extraire les informations\n(durée, codec, bitrate, nombre de canaux, etc.).\n\nIl est toujours fourni avec FFmpeg dans le même dossier.")
         ctk.CTkButton(fpf,text="...",width=40,command=self.browse_ffprobe,fg_color='#008000').pack(side="left",padx=3)
 
-        ctk.CTkLabel(oframe,text="Dossier de sortie :").pack(anchor="w")
+        ctk.CTkLabel(oframe,text=T('lbl_output_dir')).pack(anchor="w")
         odf=ctk.CTkFrame(oframe,fg_color="transparent"); odf.pack(fill="x",pady=5)
         self.output_dir_entry=ctk.CTkEntry(odf); self.output_dir_entry.pack(side="left",fill="x",expand=True)
         self.output_dir_entry.insert(0,self.settings.get('output_dir',''))
@@ -1133,29 +1136,37 @@ class PyAudioCodingTools:
         ctk.CTkButton(odf,text="...",width=40,command=self.browse_output_dir,fg_color='#008000').pack(side="left",padx=3)
 
         opts=ctk.CTkFrame(oframe,fg_color="transparent"); opts.pack(fill="x",pady=15)
-        ctk.CTkLabel(opts,text="Cœurs CPU :").pack(side=tk.LEFT,padx=(0,3))
+        ctk.CTkLabel(opts,text=T('lbl_cpu_cores')).pack(side=tk.LEFT,padx=(0,3))
         self.max_workers_entry=ctk.CTkEntry(opts,width=35); self.max_workers_entry.insert(0,self.settings.get('max_workers','12')); self.max_workers_entry.pack(side=tk.LEFT,padx=3)
         ToolTip(self.max_workers_entry,"Le nombre de fichiers qui seront convertis en même temps.\n\nAUGMENTER = Plus rapide mais utilise plus de CPU/RAM.\nRÉDUIRE = Plus lent mais moins gourmand.\n\nRecommandation : moitié du nombre de cœurs CPU. Max: 32.")
-        pp=ctk.CTkCheckBox(opts,text="Traitement parallèle",variable=self.parallel_processing_var,width=130); pp.pack(side=tk.LEFT,padx=6)
+        pp=ctk.CTkCheckBox(opts,text=T('chk_parallel'),variable=self.parallel_processing_var,width=130); pp.pack(side=tk.LEFT,padx=6)
         ToolTip(pp,"ACTIVÉ : Convertit plusieurs fichiers en même temps (rapide).\nLe nombre est défini par 'Cœurs CPU' ci-dessus.\n\nDÉSACTIVÉ : Convertit un par un, dans l'ordre (plus stable, logs lisibles).")
-        ctk.CTkLabel(opts,text="Couleur d'accentuation :").pack(side=tk.LEFT,padx=3)
+        ctk.CTkLabel(opts,text=T('lbl_accent_color')).pack(side=tk.LEFT,padx=3)
         self.color_theme_combo=ctk.CTkOptionMenu(opts,values=['red','pink','autumn','yellow','lavender','orange','cherry','violet','green','blue','dark-blue'],command=self.change_color_theme,width=95)
         self.color_theme_combo.set(self.color_theme); self.color_theme_combo.pack(side=tk.LEFT,padx=3)
         ToolTip(self.color_theme_combo,"Change la couleur des boutons et barres de progression.\n11 thèmes : 8 custom + 3 intégrés (green, blue, dark-blue).")
-        tc=ctk.CTkCheckBox(opts,text="Mode clair",variable=self.theme_var,onvalue="light",offvalue="dark",command=self.change_theme,width=80); tc.pack(side=tk.LEFT,padx=6)
+        tc=ctk.CTkCheckBox(opts,text=T('chk_light_mode'),variable=self.theme_var,onvalue="light",offvalue="dark",command=self.change_theme,width=80); tc.pack(side=tk.LEFT,padx=6)
         ToolTip(tc,"ACTIVÉ : Mode clair (fond blanc).\nDÉSACTIVÉ : Mode sombre (fond noir).")
-        sc=ctk.CTkCheckBox(opts,text="Sons",variable=self.enable_sounds_var,width=50); sc.pack(side=tk.LEFT,padx=6)
+        sc=ctk.CTkCheckBox(opts,text=T('chk_sounds'),variable=self.enable_sounds_var,width=50); sc.pack(side=tk.LEFT,padx=6)
         ToolTip(sc,"ACTIVÉ : Joue un son en fin de batch :\n• Succès = tout OK\n• Avertissement = certains ont échoué\n• Erreur = tous ont échoué\n\nDÉSACTIVÉ : Aucun son.")
         ctk.CTkLabel(opts,text="Volume :").pack(side=tk.LEFT,padx=2)
         vs=ctk.CTkSlider(opts,from_=0.0,to=1.0,variable=self.sound_volume_var,width=70,command=lambda v:None); vs.pack(side=tk.LEFT,padx=2)
         ToolTip(vs,"Volume des sons de notification.\nGlissez à droite pour augmenter.")
         tsb=ctk.CTkButton(opts,text="🔊 Test",width=50,command=lambda:self.play_sound("success"),fg_color="gray"); tsb.pack(side=tk.LEFT,padx=2)
         ToolTip(tsb,"Joue le son de succès pour tester le volume.")
-        tch=ctk.CTkCheckBox(opts,text="Notifications Windows (Toast)",variable=self.enable_toast_var,width=200); tch.pack(side=tk.LEFT,padx=6)
+        tch=ctk.CTkCheckBox(opts,text=T('chk_toast'),variable=self.enable_toast_var,width=200); tch.pack(side=tk.LEFT,padx=6)
+
+        # Language selector
+        opts2=ctk.CTkFrame(oframe,fg_color="transparent"); opts2.pack(fill="x",pady=(0,10))
+        ctk.CTkLabel(opts2,text=T('lbl_language')).pack(side=tk.LEFT,padx=(0,5))
+        self.language_combo=ctk.CTkOptionMenu(opts2,values=['Français (fr)','English (en)'],width=150,
+            command=self._on_language_change)
+        self.language_combo.set('English (en)' if get_lang()=='en' else 'Français (fr)')
+        self.language_combo.pack(side=tk.LEFT,padx=3)
         ToolTip(tch,"ACTIVÉ : Notification Windows (bulle en bas à droite)\nquand un batch se termine.\nPrévient même si l'app est en arrière-plan.\n\nDÉSACTIVÉ : Pas de notification Windows.\n\n⚠ Nécessite : pip install windows-toasts")
 
         # ABOUT
-        self.about_tab=self.notebook.add("À propos")
+        self.about_tab=self.notebook.add(T('tab_about'))
         self.about_canvas=ctk.CTkCanvas(self.about_tab,highlightthickness=0); self.about_canvas.pack(fill='both',expand=True)
         self.about_canvas.bind("<Configure>",self.resize_about_image)
 
@@ -1164,19 +1175,19 @@ class PyAudioCodingTools:
         self.global_progress=ctk.CTkProgressBar(self.progress_frame,width=300,progress_color='green',mode='determinate')
         self.global_progress.pack(side=tk.LEFT,padx=15,fill='x',expand=True); self.global_progress.set(0)
         lf2=ctk.CTkFrame(self.progress_frame,width=450,height=30,fg_color="transparent"); lf2.pack(side=tk.LEFT,padx=5); lf2.pack_propagate(False)
-        self.global_progress_label=ctk.CTkLabel(lf2,text="En attente...",anchor="w"); self.global_progress_label.pack(fill='both',expand=True)
-        lb=ctk.CTkButton(self.progress_frame,text="Lancer l'encodage 🚀",command=self.start_processing,fg_color='#00DC59',text_color='#333333',width=140); lb.pack(side=tk.LEFT,padx=8)
+        self.global_progress_label=ctk.CTkLabel(lf2,text=T('status_waiting'),anchor="w"); self.global_progress_label.pack(fill='both',expand=True)
+        lb=ctk.CTkButton(self.progress_frame,text=T('btn_start'),command=self.start_processing,fg_color='#00DC59',text_color='#333333',width=140); lb.pack(side=tk.LEFT,padx=8)
         ToolTip(lb,"Lance la conversion de TOUS les fichiers présents dans la liste d'entrée (onglet Input).\n\n"
                    "Avant de cliquer, vérifiez :\n"
                    "• Que la liste contient bien vos fichiers\n"
                    "• Que les paramètres d'encodage sont corrects (onglet Paramètres)\n"
                    "• Que l'indicateur de validation est vert (✓)\n\n"
                    "La progression s'affiche dans la barre ci-dessus\net dans la barre des tâches Windows.")
-        self.pause_btn=ctk.CTkButton(self.progress_frame,text="Pause ⏸️",command=self.toggle_pause,fg_color='#FFA500',text_color='white',width=90); self.pause_btn.pack(side=tk.LEFT,padx=8)
+        self.pause_btn=ctk.CTkButton(self.progress_frame,text=T('btn_pause'),command=self.toggle_pause,fg_color='#FFA500',text_color='white',width=90); self.pause_btn.pack(side=tk.LEFT,padx=8)
         ToolTip(self.pause_btn,"Met le traitement en pause.\n\n"
                 "Le fichier actuellement en cours de conversion finira d'abord,\npuis aucun nouveau fichier ne sera lancé jusqu'à ce que vous cliquiez 'Reprendre'.\n\n"
                 "La barre des tâches Windows passera en jaune (pause).")
-        sb2=ctk.CTkButton(self.progress_frame,text="Arrêter tout 🛑",command=self.cancel_process,fg_color='#FF0000',text_color='white',width=100); sb2.pack(side=tk.LEFT,padx=8)
+        sb2=ctk.CTkButton(self.progress_frame,text=T('btn_stop'),command=self.cancel_process,fg_color='#FF0000',text_color='white',width=100); sb2.pack(side=tk.LEFT,padx=8)
         ToolTip(sb2,"Annule IMMÉDIATEMENT tous les traitements en cours.\n\n"
                 "Les fichiers en cours d'encodage seront interrompus.\n"
                 "Les fichiers déjà terminés ne sont pas affectés.\n"
@@ -1446,7 +1457,7 @@ class PyAudioCodingTools:
         if self.cancel_processing: self.update_queue.put(self.taskbar.set_state_off)
         else: self.clear_crash_recovery()
         # Reset titre
-        self.update_queue.put(lambda: self.root.title(f"PyAudioCodingTools v{self.VERSION} - Batch GUI pour encodage audio"))
+        self.update_queue.put(lambda: self.root.title(T('window_title', version=self.VERSION)))
         t=len(ok)+len(err)
         if err: self.send_toast("Encodage terminé",f"{len(ok)}/{t} fichiers réussis, {len(err)} en erreur")
         else: self.send_toast("Encodage terminé ✓",f"Les {t} fichiers ont été encodés avec succès !")
@@ -1456,10 +1467,10 @@ class PyAudioCodingTools:
             def _final_progress(t=total, el=elapsed, nok=len(ok), nerr=len(err)):
                 self.global_progress.set(1.0)
                 self.taskbar.set_progress(100,100)
-                status = "✓ Terminé" if nerr==0 else f"⚠ {nok}/{t} réussis"
+                status = T('status_ok') if nerr==0 else T('status_partial', ok=nok, total=t)
                 self.global_progress_label.configure(
-                    text=f"{t}/{t} (100%) — {status} — Temps total: {self.format_time(el)}")
-                self.root.title(f"PyAudioCodingTools v{self.VERSION} — ✓ Terminé")
+                    text=T('progress_final', done=t, total=t, status=status, elapsed=self.format_time(el)))
+                self.root.title(T('window_title_done', version=self.VERSION))
             self.update_queue.put(_final_progress)
 
     def update_global_progress(self, total):
@@ -1475,26 +1486,35 @@ class PyAudioCodingTools:
                     try: ss+=float(sp.replace('x','')); vn+=1
                     except: pass
             avg=ss/vn if vn>0 else 0
-        txt=f"{done}/{total} ({int(pct)}%) — Vitesse moy: {avg:.1f}x — Écoulé: {self.format_time(el)}   |   Restant estimé: {self.format_time(rem)}"
+        txt=T('progress_txt', done=done, total=total, pct=int(pct), avg=avg, elapsed=self.format_time(el), rem=self.format_time(rem))
         title_pct = int(pct)
         self.update_queue.put(lambda p=pct:self.global_progress.set(p/100))
         self.update_queue.put(lambda p=pct:self.taskbar.set_progress(p,100))
         self.update_queue.put(lambda t=txt:self.global_progress_label.configure(text=t))
         self.update_queue.put(lambda tp=title_pct: self.root.title(
-            f"[{tp}%] PyAudioCodingTools v{self.VERSION}" if tp < 100 
-            else f"PyAudioCodingTools v{self.VERSION} — ✓ Terminé"))
+            T('window_title_pct', pct=tp, version=self.VERSION) if tp < 100
+            else T('window_title_done', version=self.VERSION)))
+
+    def _on_language_change(self, choice):
+        lang = 'en' if choice.startswith('English') else 'fr'
+        if lang != get_lang():
+            import tkinter.messagebox as mb
+            mb.showinfo("Language / Langue", T('lang_restart_msg'))
+            set_lang(lang)
+            self.settings['language'] = lang
+            self.save_settings()
 
     def toggle_pause(self):
         self.pause_processing=not self.pause_processing
-        if self.pause_processing: self.pause_event.clear(); self.pause_btn.configure(text="Reprendre ▶️"); self.taskbar.set_state_paused()
-        else: self.pause_event.set(); self.pause_btn.configure(text="Pause ⏸️"); self.taskbar.set_state_normal()
+        if self.pause_processing: self.pause_event.clear(); self.pause_btn.configure(text=T('btn_resume')); self.taskbar.set_state_paused()
+        else: self.pause_event.set(); self.pause_btn.configure(text=T('btn_pause')); self.taskbar.set_state_normal()
     def cancel_process(self):
         self.cancel_processing=True; self.pause_event.set()
-        self.update_queue.put(lambda:self.output_text.insert("end","⛔ Annulation en cours...\n","error")); self.taskbar.set_state_error()
+        self.update_queue.put(lambda:self.output_text.insert("end",T('cancel_msg'),"error")); self.taskbar.set_state_error()
     def clear_log_and_jobs(self):
         self.output_text.delete(1.0,"end")
         for w in self.progress_pane.winfo_children(): w.destroy()
-        self.progress_bars.clear(); self.global_progress.set(0); self.global_progress_label.configure(text="En attente..."); self.taskbar.set_state_off()
+        self.progress_bars.clear(); self.global_progress.set(0); self.global_progress_label.configure(text=T('status_waiting')); self.taskbar.set_state_off()
     def save_log(self):
         p=filedialog.asksaveasfilename(defaultextension=".txt",title="Enregistrer le log sous...",filetypes=[("Fichier texte","*.txt")])
         if p:
@@ -1608,7 +1628,7 @@ class PyAudioCodingTools:
         self.about_canvas.delete("txt")
         self.about_canvas.create_text(20,20,text=txt,justify=tk.LEFT,font=("Arial",12,"bold"),anchor='nw',
                                        fill='#000000' if self.theme=='light' else '#ffffff',tags="txt")
-        if event and self.notebook.get()=="À propos" and not self._about_sound_played:
+        if event and self.notebook.get()==T('tab_about') and not self._about_sound_played:
             self._about_sound_played = True
             self.play_sound("about")
     def update_progress_width(self, event=None):

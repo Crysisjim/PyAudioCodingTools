@@ -1,5 +1,6 @@
-# audio_utils.py - v2.2 (FFT Spectrogram + Refactored, sans DeeZy)
+# audio_utils.py - v2.4 (FFT Spectrogram + Refactored + bilingual)
 import os, subprocess, json, re, time, shutil, shlex
+from strings import T
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
@@ -340,7 +341,7 @@ def process_file(app, input_file, progress_bar, progress_label):
     
     tbr = app.bitrate_combo.get()+" kbits/s"
     with app.data_lock: app.target_bitrates[input_file]=tbr; app.real_bitrates[input_file]="N/A"
-    _update_step(app, input_file, basename, "Préparation", tbr)
+    _update_step(app, input_file, basename, T('step_prepare'), tbr)
     
     try:
         if not os.path.exists(ffmpeg) and not shutil.which(ffmpeg):
@@ -351,7 +352,7 @@ def process_file(app, input_file, progress_bar, progress_label):
         _ok, warn = _validate_channel_config(codec, sm, inch)
         if warn: app.update_queue.put(lambda w=warn, bn=basename: app.output_text.insert("end",f"[{bn}] ⚠ {w}\n","info"))
         
-        _update_step(app, input_file, basename, "Conversion en WAV", tbr)
+        _update_step(app, input_file, basename, T('step_wav'), tbr)
         cw = [ffmpeg,"-i",actual_file,"-vn"]
         if track_index is not None:
             cw.extend(["-map", f"0:a:{track_index}"])
@@ -376,7 +377,7 @@ def process_file(app, input_file, progress_bar, progress_label):
             raise TimeoutError(f"Timeout WAV après {wav_timeout}s — réduisez le nombre de fichiers parallèles (onglet Options)")
         if p.returncode != 0: raise subprocess.CalledProcessError(p.returncode, cw, stderr=se)
         
-        _update_step(app, input_file, basename, "Récupération de la durée", tbr)
+        _update_step(app, input_file, basename, T('step_duration'), tbr)
         dur = get_duration(app, tmpw)
         if dur is None: raise ValueError("Durée introuvable")
         app.update_queue.put(lambda: progress_bar.set(0))
@@ -386,7 +387,7 @@ def process_file(app, input_file, progress_bar, progress_label):
         
         ld = None
         if app.loudnorm_var.get() and codec in LOUDNORM_CODECS:
-            _update_step(app, input_file, basename, "Analyse Loudnorm (passe 1/2)", tbr)
+            _update_step(app, input_file, basename, T('step_loudnorm1'), tbr)
             c1 = [ffmpeg,"-i",tmpw]+cparams+["-filter:a","loudnorm=print_format=json","-f","null","-"]
             p1 = subprocess.Popen(c1, stderr=subprocess.PIPE, universal_newlines=True, creationflags=NO_WINDOW)
             l1, cancelled = _read_ffmpeg_output(p1, app, input_file, basename, dur, progress_bar, progress_label, tbr, 0, 50)
@@ -403,7 +404,7 @@ def process_file(app, input_file, progress_bar, progress_label):
                 app.update_queue.put(lambda bn=basename, d=d2: app.output_text.insert("end",
                     f"[{bn}] Loudnorm mesuré: I={d['input_i']}, LRA={d['input_lra']}, TP={d['input_tp']}\n"))
         
-        _update_step(app, input_file, basename, "Encodage final (passe 2/2)", tbr)
+        _update_step(app, input_file, basename, T('step_encode'), tbr)
         filt = (f"aresample=async={1 if app.async_combo.get()=='On' else 0}"
                 f":min_hard_comp={app.min_hard_comp_entry.get()}"
                 f":first_pts={app.first_pts_entry.get()}"
