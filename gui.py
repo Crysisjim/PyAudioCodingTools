@@ -126,7 +126,9 @@ class PyAudioCodingTools:
         self.check_update_queue()
         try:
             ip = resource_path(os.path.join("Assets","vivi.ico"))
-            if os.path.exists(ip): self.root.iconphoto(True, ImageTk.PhotoImage(Image.open(ip)))
+            if os.path.exists(ip):
+                self.root.iconbitmap(ip)  # proper Windows taskbar icon
+                self.root.iconphoto(True, ImageTk.PhotoImage(Image.open(ip)))  # title bar
         except Exception as e: print(f"Icône: {e}")
 
         self.settings_file = "pyaudiocodingtools_settings.json"
@@ -265,18 +267,18 @@ class PyAudioCodingTools:
         w = []; cd = self.codec_var.get(); ck = self.codec_reverse_map.get(cd, cd)
         try:
             br = int(self.bitrate_combo.get())
-            if ck=='libopus' and br>256: w.append("Opus : le bitrate maximum recommandé est 256 kbps")
-            if ck=='ac3' and br>640: w.append("Dolby Digital (AC3) : le bitrate maximum est 640 kbps")
-            if ck in ('aac','libmp3lame') and br>320: w.append(f"{cd} : le bitrate maximum recommandé est 320 kbps")
+            if ck=='libopus' and br>256: w.append(T('val_opus_max'))
+            if ck=='ac3' and br>640: w.append(T('val_ac3_max'))
+            if ck in ('aac','libmp3lame') and br>320: w.append(T('val_br_max', codec=cd))
         except: pass
         sm = self.surround_mode_var.get()
         if sm != 'same':
             mx = MAX_CHANNELS.get(ck,8); req = int(AC_MAP.get(sm,'6'))
-            if req > mx: w.append(f"{cd} ne supporte que {mx} canaux maximum (vous demandez {sm})")
-        if self.loudnorm_var.get() and ck not in LOUDNORM_CODECS: w.append(f"La normalisation Loudnorm n'est pas compatible avec {cd}")
-        if self.dialnorm_var.get() and ck != 'eac3': w.append("Dialnorm est uniquement utilisé avec Dolby Digital Plus (E-AC3)")
+            if req > mx: w.append(T('val_ch_max', codec=cd, max=mx, req=sm))
+        if self.loudnorm_var.get() and ck not in LOUDNORM_CODECS: w.append(T('val_loudnorm_incompat', codec=cd))
+        if self.dialnorm_var.get() and ck != 'eac3': w.append(T('val_dialnorm_only'))
         if w: self.validation_label.configure(text="⚠ "+" | ".join(w), text_color="#FFA500")
-        else: self.validation_label.configure(text="✓ Configuration valide — Prêt à encoder", text_color="#00CC00")
+        else: self.validation_label.configure(text=T('valid_ok'), text_color="#00CC00")
 
     # ===================== FFMPEG UPDATE =====================
     def update_ffmpeg(self):
@@ -944,9 +946,9 @@ class PyAudioCodingTools:
                    "car ces formats supportent déjà les métadonnées nativement.")
 
         self.loudness_params_frame=ctk.CTkFrame(mpf)
-        ctk.CTkLabel(self.loudness_params_frame,text="Paramètres de normalisation Loudness (EBU R128)",font=("Arial",11,"bold")).pack(pady=5)
+        ctk.CTkLabel(self.loudness_params_frame,text=T('loudnorm_title'),font=("Arial",11,"bold")).pack(pady=5)
         li=ctk.CTkFrame(self.loudness_params_frame,fg_color="transparent"); li.pack(pady=5)
-        ctk.CTkLabel(li,text="Cible I (LUFS) :").pack(side="left",padx=5); self.loudnorm_i_combo=ctk.CTkOptionMenu(li,values=[],width=80); self.loudnorm_i_combo.pack(side="left",padx=5)
+        ctk.CTkLabel(li,text=T('lbl_target_i')).pack(side="left",padx=5); self.loudnorm_i_combo=ctk.CTkOptionMenu(li,values=[],width=80); self.loudnorm_i_combo.pack(side="left",padx=5)
         ToolTip(self.loudnorm_i_combo,"Le volume moyen cible de votre fichier (Integrated Loudness), en LUFS.\n\n"
                 "AUGMENTER (vers 0) = Son plus fort.\n"
                 "RÉDUIRE (vers -70) = Son plus faible.\n\n"
@@ -956,7 +958,7 @@ class PyAudioCodingTools:
                 "• -18 LUFS : Bon compromis pour le web et les séries\n"
                 "• -16 LUFS : Standard streaming (Spotify, YouTube)\n"
                 "• -14 LUFS : Fort, pour les podcasts très dynamiques")
-        ctk.CTkLabel(li,text="LRA :").pack(side="left",padx=5); self.loudnorm_lra_combo=ctk.CTkOptionMenu(li,values=[],width=80); self.loudnorm_lra_combo.pack(side="left",padx=5)
+        ctk.CTkLabel(li,text=T('lbl_lra')).pack(side="left",padx=5); self.loudnorm_lra_combo=ctk.CTkOptionMenu(li,values=[],width=80); self.loudnorm_lra_combo.pack(side="left",padx=5)
         ToolTip(self.loudnorm_lra_combo,"L'écart autorisé entre les passages les plus calmes et les plus forts (Loudness Range).\n\n"
                 "AUGMENTER = Plus de dynamique. Les passages calmes restent calmes,\nles passages forts restent forts (effet cinéma).\n"
                 "RÉDUIRE = Son plus uniforme. Tout est au même niveau\n(effet radio/podcast).\n\n"
@@ -964,7 +966,7 @@ class PyAudioCodingTools:
                 "• 5-7 LU : Radio, podcast — tout est bien nivelé\n"
                 "• 11 LU : Standard TV — bon équilibre (RECOMMANDÉ)\n"
                 "• 15-20 LU : Film/cinéma — gros écarts voulus")
-        ctk.CTkLabel(li,text="True Peak (dB) :").pack(side="left",padx=5); self.loudnorm_tp_combo=ctk.CTkOptionMenu(li,values=[],width=80); self.loudnorm_tp_combo.pack(side="left",padx=5)
+        ctk.CTkLabel(li,text=T('lbl_truepeak')).pack(side="left",padx=5); self.loudnorm_tp_combo=ctk.CTkOptionMenu(li,values=[],width=80); self.loudnorm_tp_combo.pack(side="left",padx=5)
         ToolTip(self.loudnorm_tp_combo,"Le niveau maximal absolu que le son ne doit JAMAIS dépasser (True Peak).\n\n"
                 "AUGMENTER (vers 0) = Autorise des pics plus forts.\nRisque de distorsion/grésillement (clipping).\n"
                 "RÉDUIRE (vers -9) = Plus de marge de sécurité.\nSon un peu moins fort mais garanti sans distorsion.\n\n"
@@ -973,30 +975,30 @@ class PyAudioCodingTools:
                 "• -2.0 dB : Extra sécurité, idéal pour les amplis sensibles\n"
                 "• 0.0 dB : Aucune marge — déconseillé (risque de clipping)")
 
-        af=ctk.CTkFrame(mpf); af.pack(fill='x',pady=10); ctk.CTkLabel(af,text="Paramètres avancés FFmpeg",font=("Arial",11,"bold")).pack(pady=5)
+        af=ctk.CTkFrame(mpf); af.pack(fill='x',pady=10); ctk.CTkLabel(af,text=T('adv_title'),font=("Arial",11,"bold")).pack(pady=5)
         ti=ctk.CTkFrame(af,fg_color="transparent"); ti.pack(pady=5)
-        ctk.CTkLabel(ti,text="Durée d'analyse :").grid(row=0,column=0,padx=2,sticky="e")
+        ctk.CTkLabel(ti,text=T('lbl_analyze_dur')).grid(row=0,column=0,padx=2,sticky="e")
         self.analyze_duration_combo=ctk.CTkOptionMenu(ti,values=['10M','20M','50M','80M','100M','200M'],width=90)
         self.analyze_duration_combo.set(self.settings.get('analyze_duration','80M')); self.analyze_duration_combo.grid(row=0,column=1,padx=2)
         ToolTip(self.analyze_duration_combo,"Combien de temps (en octets) FFmpeg analyse le fichier pour détecter son format.\n\n"
                 "AUGMENTER = FFmpeg lit plus de données avant de commencer.\nCorrige les erreurs 'Format not found' ou 'Invalid data'.\n"
                 "RÉDUIRE = Démarrage plus rapide mais risque d'erreur sur certains fichiers.\n\n"
                 "80M convient à 99% des fichiers. Montez à 200M si vous avez des fichiers exotiques.")
-        ctk.CTkLabel(ti,text="Taille de sonde :").grid(row=0,column=2,padx=2,sticky="e")
+        ctk.CTkLabel(ti,text=T('lbl_probe_size')).grid(row=0,column=2,padx=2,sticky="e")
         self.probe_size_combo=ctk.CTkOptionMenu(ti,values=['10M','20M','50M','60M','80M','100M'],width=90)
         self.probe_size_combo.set(self.settings.get('probe_size','60M')); self.probe_size_combo.grid(row=0,column=3,padx=2)
         ToolTip(self.probe_size_combo,"Quantité de données que FFmpeg lit au début du fichier pour en comprendre la structure.\n\n"
                 "AUGMENTER = Meilleure détection du format, mais plus lent au démarrage.\n"
                 "RÉDUIRE = Plus rapide, mais peut échouer sur des fichiers mal formés.\n\n"
                 "60M est un bon défaut. Augmentez si vous avez des erreurs au lancement du traitement.")
-        ctk.CTkLabel(ti,text="Synchronisation audio :").grid(row=0,column=4,padx=2,sticky="e")
+        ctk.CTkLabel(ti,text=T('lbl_async')).grid(row=0,column=4,padx=2,sticky="e")
         self.async_combo=ctk.CTkOptionMenu(ti,values=['On','Off'],width=90); self.async_combo.grid(row=0,column=5,padx=2)
         ToolTip(self.async_combo,"Corrige automatiquement les petits décalages entre l'audio et la vidéo.\n\n"
                 "ON : FFmpeg étire ou compresse très légèrement le son pour le recaler.\n"
                 "     Recommandé si vos fichiers viennent de rips DVD/Blu-ray.\n\n"
                 "OFF : Aucune correction. Le son est copié tel quel.\n"
                 "     Utilisez OFF si vous traitez de la musique pure (pas de vidéo).")
-        ctk.CTkLabel(ti,text="Resampler :").grid(row=0,column=6,padx=2,sticky="e")
+        ctk.CTkLabel(ti,text=T('lbl_resampler')).grid(row=0,column=6,padx=2,sticky="e")
         self.resampler_combo=ctk.CTkOptionMenu(ti,values=['soxr','swr'],width=90); self.resampler_combo.grid(row=0,column=7,padx=2)
         ToolTip(self.resampler_combo,"Le moteur utilisé pour convertir la fréquence d'échantillonnage du son.\n\n"
                 "• soxr : Haute qualité (SoX Resampler). Produit un son plus propre\n"
@@ -1005,14 +1007,14 @@ class PyAudioCodingTools:
                 "• swr : Le resampler standard de FFmpeg (Software Resampler).\n"
                 "        Un peu moins précis mais fonctionne avec toutes les builds FFmpeg.\n"
                 "        Utilisez swr si soxr provoque une erreur.")
-        ctk.CTkLabel(ti,text="Compensation synchro :").grid(row=0,column=8,padx=2,sticky="e")
+        ctk.CTkLabel(ti,text=T('lbl_min_comp')).grid(row=0,column=8,padx=2,sticky="e")
         self.min_hard_comp_entry=ctk.CTkEntry(ti,width=80); self.min_hard_comp_entry.insert(0,self.settings.get('min_hard_comp','0.100000')); self.min_hard_comp_entry.grid(row=0,column=9,padx=2)
         ToolTip(self.min_hard_comp_entry,"Seuil à partir duquel FFmpeg applique une correction 'dure' de la synchronisation.\n\n"
                 "Valeur par défaut : 0.100000 (100 ms)\n"
                 "En dessous de ce seuil, FFmpeg étire doucement le son.\n"
                 "Au-dessus, il coupe ou insère du silence pour recaler.\n\n"
                 "⚠ Ne modifiez cette valeur que si vous avez des problèmes\nde décalage audio/vidéo persistants.")
-        ctk.CTkLabel(ti,text="Premier PTS :").grid(row=0,column=10,padx=2,sticky="e")
+        ctk.CTkLabel(ti,text=T('lbl_first_pts')).grid(row=0,column=10,padx=2,sticky="e")
         self.first_pts_entry=ctk.CTkEntry(ti,width=80); self.first_pts_entry.insert(0,self.settings.get('first_pts','0')); self.first_pts_entry.grid(row=0,column=11,padx=2)
         ToolTip(self.first_pts_entry,"Force le timestamp de début du son à la valeur indiquée.\n\n"
                 "Valeur par défaut : 0 (le son commence au tout début)\n\n"
@@ -1020,8 +1022,8 @@ class PyAudioCodingTools:
                 "(fréquent avec les pistes audio extraites de fichiers MKV ou MP4).\n"
                 "Dans la plupart des cas, laissez 0.")
 
-        ctk.CTkLabel(mpf,text="Arguments personnalisés FFmpeg :").pack(pady=(10,0))
-        self.custom_params_entry=ctk.CTkEntry(mpf,width=500,placeholder_text="ex: -af bass=g=5  |  -ac 2  |  -map 0:a:1"); self.custom_params_entry.pack(pady=5)
+        ctk.CTkLabel(mpf,text=T('lbl_custom_params')).pack(pady=(10,0))
+        self.custom_params_entry=ctk.CTkEntry(mpf,width=500,placeholder_text=T('custom_params_ph')); self.custom_params_entry.pack(pady=5)
         ToolTip(self.custom_params_entry,"Zone réservée aux utilisateurs avancés.\n\n"
                 "Permet d'ajouter des arguments FFmpeg personnalisés qui seront\n"
                 "ajoutés à la commande d'encodage.\n\n"
@@ -1756,32 +1758,32 @@ class PyAudioCodingTools:
         f=ctk.CTkFrame(self.codec_specific_frame,fg_color="transparent"); has=False
         if k=='aac':
             has=True; f.pack()
-            ctk.CTkLabel(f,text="Mode d'encodage :").pack(side="left",padx=5)
+            ctk.CTkLabel(f,text=T('lbl_enc_mode')).pack(side="left",padx=5)
             self.codec_params[c]['bitrate_mode']=ctk.StringVar(value='CBR')
             bm=ctk.CTkOptionMenu(f,variable=self.codec_params[c]['bitrate_mode'],values=['CBR','VBR','ABR']); bm.pack(side="left",padx=5)
             ToolTip(bm,"CBR (Constant Bit Rate) : Bitrate fixe. Taille de fichier prévisible.\nVBR (Variable Bit Rate) : Bitrate variable. Meilleur rapport qualité/taille.\nABR (Average Bit Rate) : Compromis entre CBR et VBR.")
-            ctk.CTkLabel(f,text="Profil AAC :").pack(side="left",padx=5)
+            ctk.CTkLabel(f,text=T('lbl_aac_profile')).pack(side="left",padx=5)
             self.codec_params[c]['profile']=ctk.StringVar(value='aac_low')
             pr=ctk.CTkOptionMenu(f,variable=self.codec_params[c]['profile'],values=['aac_low','aac_he','aac_he_v2']); pr.pack(side="left",padx=5)
             ToolTip(pr,"aac_low : Profil standard. Bonne qualité à 128+ kbps.\naac_he : Haute efficacité. Meilleur à bas bitrate (64-96 kbps).\naac_he_v2 : HE v2. Excellent à très bas bitrate (32-64 kbps). Stéréo seulement.")
         elif k=='libmp3lame':
             has=True; f.pack()
-            ctk.CTkLabel(f,text="Mode d'encodage :").pack(side="left",padx=5)
+            ctk.CTkLabel(f,text=T('lbl_enc_mode')).pack(side="left",padx=5)
             self.codec_params[c]['bitrate_mode']=ctk.StringVar(value='CBR')
             bm=ctk.CTkOptionMenu(f,variable=self.codec_params[c]['bitrate_mode'],values=['CBR','VBR']); bm.pack(side="left",padx=5)
             ToolTip(bm,"CBR : Bitrate fixe. Compatible partout.\nVBR : Bitrate variable. Meilleure qualité à taille équivalente.")
-            ctk.CTkLabel(f,text="Qualité VBR :").pack(side="left",padx=5)
+            ctk.CTkLabel(f,text=T('lbl_vbr_quality')).pack(side="left",padx=5)
             self.codec_params[c]['vbr_quality']=ctk.StringVar(value='2')
             vq=ctk.CTkOptionMenu(f,variable=self.codec_params[c]['vbr_quality'],values=[str(i) for i in range(10)]); vq.pack(side="left",padx=5)
             ToolTip(vq,"De 0 (meilleure qualité, ~245 kbps) à 9 (pire qualité, ~65 kbps).\n\n0-2 : Excellente qualité (recommandé)\n3-5 : Bonne qualité\n6-9 : Qualité réduite (fichiers petits)")
         elif k=='libopus':
             has=True; f.pack()
-            ctk.CTkLabel(f,text="Mode VBR :").pack(side="left",padx=5)
+            ctk.CTkLabel(f,text=T('lbl_vbr_mode')).pack(side="left",padx=5)
             self.codec_params[c]['vbr']=ctk.StringVar(value='on')
             vb=ctk.CTkOptionMenu(f,variable=self.codec_params[c]['vbr'],values=['on','off']); vb.pack(side="left",padx=5)
             ToolTip(vb,"on : Bitrate variable (recommandé). Meilleur rapport qualité/taille.\noff : Bitrate constant. Taille plus prévisible mais qualité légèrement moindre.")
-        if has: ctk.CTkLabel(self.codec_specific_frame,text=f"Options spécifiques {c}",font=("Arial",11,"bold")).pack(side="top",before=f)
-        else: ctk.CTkLabel(self.codec_specific_frame,text="Aucune option spécifique pour ce codec",text_color="gray").pack()
+        if has: ctk.CTkLabel(self.codec_specific_frame,text=T('codec_opts_title',codec=c),font=("Arial",11,"bold")).pack(side="top",before=f)
+        else: ctk.CTkLabel(self.codec_specific_frame,text=T('codec_no_opts'),text_color="gray").pack()
     def update_loudnorm_state(self): self.update_codec_params(); self.toggle_loudness_visibility()
     def toggle_loudness_visibility(self):
         if self.loudnorm_var.get(): self.loudness_params_frame.pack(fill='x',pady=5,after=self.codec_specific_frame)

@@ -1,6 +1,8 @@
 <div align="center">
 
-# 🎛️ PyAudioCodingTools v2.4
+<img src="Assets/vivi.png" width="120" style="border-radius:50%"/>
+
+# PyAudioCodingTools v2.4
 
 **Batch audio encoding GUI — FFmpeg frontend**
 
