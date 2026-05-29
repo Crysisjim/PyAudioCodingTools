@@ -423,7 +423,16 @@ class PyAudioCodingTools:
                             pct = int(dl/total*100); mb = dl//(1024*1024); tmb = total//(1024*1024)
                             self.update_queue.put(lambda p=pct, m=mb, t=tmb: sl.configure(text=f"Téléchargement... {p}% ({m}/{t} Mo)"))
                 
-                # Extraction — essayer dans l'ordre : WinRAR, 7-Zip, tar (Win11 natif)
+                # Nettoyage des anciennes versions avant extraction
+                self.update_queue.put(lambda: sl.configure(text="Nettoyage ancienne version..."))
+                for _item in os.listdir(install_dir):
+                    _p = os.path.join(install_dir, _item)
+                    try:
+                        if os.path.isdir(_p): shutil.rmtree(_p)
+                        else: os.remove(_p)
+                    except Exception as _ce: print(f"Cleanup: {_ce}")
+
+                # Extraction — essayer dans l'ordre : WinRAR, 7-Zip
                 self.update_queue.put(lambda: sl.configure(text="Extraction en cours..."))
                 extract_ok = False
                 
@@ -459,16 +468,21 @@ class PyAudioCodingTools:
                              "• 7-Zip : https://www.7-zip.org/", text_color="#FF0000"))
                     self.update_queue.put(lambda: pb.stop()); return
                 
-                # Trouver ffmpeg.exe dans le dossier extrait
-                new_ff = None; new_fp = None
+                # Trouver ffmpeg.exe — chercher TOUS les candidats, garder le plus récent
+                ff_candidates = []
                 for root_dir, dirs, files_list in os.walk(install_dir):
                     for fname in files_list:
-                        if fname.lower() == 'ffmpeg.exe' and not new_ff:
-                            new_ff = os.path.join(root_dir, fname)
+                        if fname.lower() == 'ffmpeg.exe':
                             fp_cand = os.path.join(root_dir, 'ffprobe.exe')
                             if not os.path.exists(fp_cand):
                                 fp_cand = os.path.join(root_dir, 'ffprobe.EXE')
-                            if os.path.exists(fp_cand): new_fp = fp_cand
+                            if os.path.exists(fp_cand):
+                                ff_path = os.path.join(root_dir, fname)
+                                ff_candidates.append((os.path.getmtime(ff_path), ff_path, fp_cand))
+                new_ff = None; new_fp = None
+                if ff_candidates:
+                    ff_candidates.sort(reverse=True)  # plus récent en premier
+                    _, new_ff, new_fp = ff_candidates[0]
                 
                 if new_ff and new_fp:
                     # Créer les symlinks dans WinGet/Links

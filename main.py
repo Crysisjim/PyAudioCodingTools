@@ -65,10 +65,17 @@ def write_crash_log(exc_type, exc_value, exc_tb):
 sys.excepthook = write_crash_log
 
 if __name__ == "__main__":
+    # Set AppUserModelID BEFORE creating window — fixes taskbar icon on Windows
     try:
-        ctk.set_appearance_mode("dark") 
-        ctk.set_default_color_theme("green") 
-        
+        import ctypes
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID('Crysisjim.PyAudioCodingTools.2.4')
+    except Exception:
+        pass
+
+    try:
+        ctk.set_appearance_mode("dark")
+        ctk.set_default_color_theme("green")
+
         if TkinterDnD is not None:
             root = TkinterDnD.Tk()
         else:
