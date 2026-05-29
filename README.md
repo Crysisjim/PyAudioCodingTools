@@ -9,8 +9,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e)](LICENSE)
 [![Release](https://img.shields.io/github/v/release/Crysisjim/PyAudioCodingTools?color=f97316&label=Latest)](https://github.com/Crysisjim/PyAudioCodingTools/releases/latest)
 [![FFmpeg](https://img.shields.io/badge/FFmpeg-Required-ef4444?logo=ffmpeg&logoColor=white)](https://www.gyan.dev/ffmpeg/builds/)
+[![Wiki](https://img.shields.io/badge/📖_Wiki-Documentation-8b5cf6)](https://github.com/Crysisjim/PyAudioCodingTools/wiki)
 
-🇬🇧 [English](#english) · 🇫🇷 [Français](#français)
+🇬🇧 [English](#english) · 🇫🇷 [Français](#français) · [📖 Wiki](https://github.com/Crysisjim/PyAudioCodingTools/wiki)
 
 </div>
 
